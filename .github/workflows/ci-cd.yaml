@@ -21,19 +21,27 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    # Step 3: Build the Docker image
-    - name: Build Docker Image
-      run: |
-        docker build -t jeffreyjuice .
+    # Step 3: Log in to Docker Hub
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-    # Step 4: Set up SSH to VPS
+    # Step 4: Build and push the Docker image to Docker Hub
+    - name: Build and Push Docker Image to Docker Hub
+      run: |
+        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/jeffreyjuice:latest .
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/jeffreyjuice:latest
+
+    # Step 5: Set up SSH to VPS
     - name: Set up SSH to VPS
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        ssh-known-hosts: ${{ secrets.VPS_HOST }}
+        # ssh-known-hosts: ${{ secrets.VPS_HOST }}
 
-    # Step 5: Deploy the Docker container on the VPS
+    # Step 6: Deploy the Docker container on the VPS
     - name: Deploy Docker container to VPS
       env:
         VPS_USER: ${{ secrets.VPS_USER }}
@@ -45,17 +53,16 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST << 'EOF'
           # Stop and remove any existing container
-          docker stop jeffreyjuice || true
-          docker rm jeffreyjuice || true
+          docker stop jeffreyjuice-cont || true
+          docker rm jeffreyjuice-cont || true
           
           # Pull latest image from GitHub Actions build
-          docker pull jeffreyjuice
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/my-bot-image:latest
           
           # Run a new container with environment variables from GitHub secrets
-          docker run -d --name jeffreyjuice \
+          docker run -d --name jeffreyjuice-cont \
             -e API_ID=$API_ID \
             -e API_HASH=$API_HASH \
             -e BOT_TOKEN=$BOT_TOKEN \
-            # Add additional environment variables here
-            jeffreyjuice
+            ${{ secrets.DOCKER_HUB_USERNAME }}/jeffreyjuice:latest
         EOF
