@@ -1,0 +1,18 @@
+fork:
+  incoming: "/start"
+  text: "Рады, что ты заглянул к нам! Хочешь что-нибудь?"
+  img: "hi.jpeg"
+  next:
+    - incoming: "Ага"
+      img: "i_want.jpeg"
+      text: "Что ты хочешь?"
+      next: 
+        - incoming: "Кофе"
+          img: "coffee.jpeg"
+          text: "Вот твой кофе!"
+        - incoming: "Воды"
+          img: "water.jpeg"
+          text: "Вот твоя вода!"
+    - incoming: "Неа"
+      img: "i_dont_want.jpeg"
+      text: "Очень жаль("      
