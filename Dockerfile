@@ -7,8 +7,6 @@ COPY requirements.txt ./
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY .env ./.env
-
 COPY main.py config.yaml ./
 COPY src ./src
 COPY data ./data
