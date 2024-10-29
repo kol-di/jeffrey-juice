@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from telethon.sync import TelegramClient
 from telethon import events, Button
 from yaml import safe_load
+from telethon.errors.rpcerrorlist import FilePart0MissingError
 
 from src.novel_parser import NovelParser
 from src.image_cache import ImageCache
@@ -31,13 +32,23 @@ image_cache = ImageCache(bot, images, config['images_path'])
 @bot.on(events.NewMessage(incoming=True, pattern=r'/start'))
 async def my_event_handler(event):
     sender = await event.get_sender()
-    file = (await image_cache.refresh())['start.jpeg']
-    await bot.send_message(
-        sender,
-        message="Сыграем?",
-        buttons=[
-            Button.inline('Конечно!', data='0')],
-        file=file
+    try:
+        file = (await image_cache.get('start.jpeg'))
+        await bot.send_message(
+            sender,
+            message="Сыграем?",
+            buttons=[
+                Button.inline('Конечно!', data='0')],
+            file=file
+        )
+    except FilePart0MissingError:
+        file = (await image_cache.refresh('start.jpeg'))
+        await bot.send_message(
+            sender,
+            message="Сыграем?",
+            buttons=[
+                Button.inline('Конечно!', data='0')],
+            file=file
         )
 
 for fork in novel_parser:
@@ -60,15 +71,24 @@ for fork in novel_parser:
                 'Назад', data=fork['prev']
             )])
 
-        file = (await image_cache.refresh())[fork['img']]
-
         msg_to_edit = await event.get_message()
-        await bot.edit_message(
-            entity=msg_to_edit,
-            message=fork['text'],
-            file=file, 
-            buttons=buttons
-        )
+
+        try:
+            file = (await image_cache.get(fork['img']))
+            await bot.edit_message(
+                entity=msg_to_edit,
+                message=fork['text'],
+                file=file, 
+                buttons=buttons
+            )
+        except FilePart0MissingError:
+            file = (await image_cache.refresh(fork['img']))
+            await bot.edit_message(
+                entity=msg_to_edit,
+                message=fork['text'],
+                file=file, 
+                buttons=buttons
+            )
+
 
 bot.run_until_disconnected()
-
