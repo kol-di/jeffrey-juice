@@ -2,11 +2,10 @@ import os
 from dotenv import load_dotenv
 from telethon.sync import TelegramClient
 from telethon import events, Button
-from telethon.sessions import StringSession
-from pathlib import Path
 from yaml import safe_load
 
 from src.novel_parser import NovelParser
+from src.image_cache import ImageCache
 
 load_dotenv()
 API_ID = os.getenv('API_ID')
@@ -21,19 +20,24 @@ novel_parser = NovelParser(
 )
 
 
-# bot = TelegramClient(StringSession(), API_ID, API_HASH)
 bot = TelegramClient('anon', API_ID, API_HASH)
 bot.start(bot_token=BOT_TOKEN)
+
+images = [fork['img'] for fork in novel_parser]
+images.append('start.jpeg')
+image_cache = ImageCache(bot, images, config['images_path'])
+
 
 @bot.on(events.NewMessage(incoming=True, pattern=r'/start'))
 async def my_event_handler(event):
     sender = await event.get_sender()
+    file = (await image_cache.refresh())['start.jpeg']
     await bot.send_message(
         sender,
         message="Сыграем?",
         buttons=[
             Button.inline('Конечно!', data='0')],
-        file=Path(config['images_path']) / 'start.jpeg'
+        file=file
         )
 
 for fork in novel_parser:
@@ -56,19 +60,15 @@ for fork in novel_parser:
                 'Назад', data=fork['prev']
             )])
 
-        if fork['img'] is not None:
-            img_path = Path(config['images_path']) / fork['img']
-        else:
-            img_path = None
+        file = (await image_cache.refresh())[fork['img']]
 
         msg_to_edit = await event.get_message()
         await bot.edit_message(
             entity=msg_to_edit,
             message=fork['text'],
-            file=img_path, 
+            file=file, 
             buttons=buttons
         )
 
-# bot.start(bot_token=BOT_TOKEN)
 bot.run_until_disconnected()
 
