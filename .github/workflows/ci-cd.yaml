@@ -57,7 +57,7 @@ jobs:
           docker rm jeffreyjuice-cont || true
           
           # Pull latest image from GitHub Actions build
-          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/my-bot-image:latest
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/jeffreyjuice:latest
           
           # Run a new container with environment variables from GitHub secrets
           docker run -d --name jeffreyjuice-cont \
