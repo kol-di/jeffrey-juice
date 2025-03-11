@@ -61,7 +61,7 @@ jobs:
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/jeffreyjuice:latest
           
           # Run a new container with environment variables from GitHub secrets
-          docker run -d --name jeffreyjuice-cont \
+          docker run -d --restart unless-stopped --name jeffreyjuice-cont \
             -e API_ID="${{ secrets.API_ID }}" \
             -e API_HASH="${{ secrets.API_HASH }}" \
             -e BOT_TOKEN="${{ secrets.BOT_TOKEN }}" \
