@@ -10,5 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main.py config.yaml ./
 COPY src ./src
 COPY data ./data
+COPY data_prod ./data_prod
 
 CMD ["python3", "main.py"]
