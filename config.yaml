@@ -1,2 +1,2 @@
-config_path: 'data/novel_config.yaml'
-images_path: data/images
+config_path: 'data_prod/novel_config.yaml'
+images_path: data_prod/images
