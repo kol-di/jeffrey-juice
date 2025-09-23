@@ -43,7 +43,7 @@ class NovelParser:
         images_path = Path(images_path)
 
         # assert text config
-        with open(config_path) as f:
+        with open(config_path, encoding='utf-8') as f:
             yaml_conf = safe_load(f)
         try: 
             validate(yaml_conf, cls.schema)
