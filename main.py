@@ -68,14 +68,21 @@ for fork in novel_parser:
 
         # create buttons
         buttons = []
-        if fork.get('next') is not None:
-            buttons.extend([
-                Button.inline(next_text, data=next_data)
-                for next_text, next_data in fork['next']])
-        buttons = [
-            buttons[i*2:(i+1)*2] 
-            for i in range(len(buttons) // 2 + 1)
-        ]
+        options = fork.get('next') or []  # list of (text, data)
+        options_sorted = sorted(options, key=lambda item: len(item[0]))
+        # group: short (<28) in pairs, long (>=28) single
+        i = 0
+        while i < len(options_sorted):
+            text, data = options_sorted[i]
+            if i + 1 < len(options_sorted) and len(options_sorted[i + 1][0]) < 28:
+                buttons.append([
+                    Button.inline(text, data=data),
+                    Button.inline(options_sorted[i + 1][0], data=options_sorted[i + 1][1])
+                ])
+                i += 2
+            else:
+                buttons.append([Button.inline(text, data=data)])
+                i += 1
         if fork['prev'] is not None:
             buttons.append([Button.inline(
                 'Назад', data=fork['prev']
