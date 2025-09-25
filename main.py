@@ -83,9 +83,15 @@ for fork in novel_parser:
             else:
                 buttons.append([Button.inline(text, data=data)])
                 i += 1
+        # Add button to return to previous node
         if fork['prev'] is not None:
             buttons.append([Button.inline(
-                'Назад', data=fork['prev']
+                '⬅️Назад', data=fork['prev']
+            )])
+        # Add restart button if end of storyline is reached
+        if not fork.get('next'):
+            buttons.append([Button.inline(
+                'Начать заново 🔄', data='0'
             )])
 
         msg_to_edit = await event.get_message()
