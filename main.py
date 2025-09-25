@@ -7,13 +7,15 @@ from telethon.errors.rpcerrorlist import FilePart0MissingError
 
 from src.novel_parser import NovelParser
 from src.image_cache import ImageCache
+from src.subscription_validator import SubscriptionValidator
 
 load_dotenv()
 API_ID = os.getenv('API_ID')
 API_HASH = os.getenv('API_HASH')
 BOT_TOKEN = os.getenv('BOT_TOKEN')
 
-with open('./config.yaml') as f:
+config_path = os.getenv('CONFIG_PATH') or './config.yaml'
+with open(config_path) as f:
     config = safe_load(f)
 novel_parser = NovelParser(
     config['config_path'], 
@@ -24,6 +26,9 @@ novel_parser = NovelParser(
 bot = TelegramClient('anon', API_ID, API_HASH)
 bot.start(bot_token=BOT_TOKEN)
 
+# Initialize subscription validator
+subscription_validator = SubscriptionValidator(bot, config_path)
+
 images = [fork['img'] for fork in novel_parser]
 images.append('start.jpeg')
 image_cache = ImageCache(bot, images, config['images_path'])
@@ -31,6 +36,9 @@ image_cache = ImageCache(bot, images, config['images_path'])
 
 @bot.on(events.NewMessage(incoming=True, pattern=r'/start'))
 async def my_event_handler(event):
+    if not await subscription_validator.ensure_subscription(event):
+        return
+    
     sender = await event.get_sender()
     try:
         file = (await image_cache.get('start.jpeg'))
@@ -55,6 +63,8 @@ for fork in novel_parser:
 
     @bot.on(events.CallbackQuery(data=fork['cur']))
     async def handler(event, fork=fork):
+        if not await subscription_validator.answer_callback_with_subscription_check(event):
+            return
 
         # create buttons
         buttons = []

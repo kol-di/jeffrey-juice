@@ -1,2 +1,5 @@
 config_path: 'data_prod/novel_config.yaml'
 images_path: data_prod/images
+# Set to your channel username (e.g., @your_channel) or chat ID
+# Leave empty or comment out to disable subscription requirement
+required_channel: '@jeffreycosplay'
