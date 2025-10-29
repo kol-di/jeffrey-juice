@@ -30,7 +30,7 @@ bot.start(bot_token=BOT_TOKEN)
 subscription_validator = SubscriptionValidator(bot, config_path)
 
 images = [fork['img'] for fork in novel_parser]
-images.append('start.jpeg')
+images.append('start.jpg')
 image_cache = ImageCache(bot, images, config['images_path'])
 
 
@@ -41,7 +41,7 @@ async def my_event_handler(event):
     
     sender = await event.get_sender()
     try:
-        file = (await image_cache.get('start.jpeg'))
+        file = (await image_cache.get('start.jpg'))
         await bot.send_message(
             sender,
             message="Сыграем?",
@@ -50,7 +50,7 @@ async def my_event_handler(event):
             file=file
         )
     except FilePart0MissingError:
-        file = (await image_cache.refresh('start.jpeg'))
+        file = (await image_cache.refresh('start.jpg'))
         await bot.send_message(
             sender,
             message="Сыграем?",

@@ -1,7 +1,7 @@
 fork:
   incoming: "/start"
   text: "Добро пожаловать!"
-  img: "start.jpeg"
+  img: "1.1 Добро пожаловать.jpg"
   next:
     - incoming: "Привет!"
       img: "2.1 Меня зовут Бен Готовы сделать заказ ver1.jpg"
